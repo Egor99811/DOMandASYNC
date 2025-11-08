@@ -5,11 +5,13 @@ const pokemonContainer = document.getElementById('pokemonContainer');
 const URL = 'https://pokeapi.co/api/v2/pokemon/';
 
 async function getPokemon(name) {
+    const controller = new AbortController();
     try {
         const response = await fetch(`${URL}${name}`);
         if (response.status === 404)
             pokemonContainer.innerText = 'Pokemon not found';
-        return await response.json();
+        const result = await response.json();
+        return {result, controller};
     } catch (e) {
         console.error(e);
     }
@@ -31,5 +33,5 @@ function fillPokemon(pokemon) {
 
 searchButton.onclick = async function() {
     const pokemon = await getPokemon(input.value);
-    fillPokemon(pokemon);
+    fillPokemon(pokemon.result);
 }

@@ -1,9 +1,11 @@
 async function getFilm(title) {
+    const controller = new AbortController();
     try {
-        const response = await fetch(`https://swapi.dev/api/films/?search=${title}`);
+        const response = await fetch(`https://swapi.dev/api/films/?search=${title}`, {signal: controller.signal});
         if (!response.ok)
             throw new Error(response.status);
-        return await response.json();
+        const result = await response.json();
+        return {result, controller};
     } catch (e) {
         console.error(e);
         return e;
@@ -12,13 +14,15 @@ async function getFilm(title) {
 
 async function getCharacters(title) {
     try{
-        const film = await getFilm(title);
-        const charactersURL = film.results[0].characters;
+        const filmResponse = await getFilm(title);
+        const film = filmResponse.result.results[0];
+        const charactersURL = film.characters;
         let characters = [];
         for(let i = 0; i < 10; i++){
             characters.push(fetch(charactersURL[i]).then(response => response.json()));
         }
-        return await Promise.all(characters);
+        const result = await Promise.all(characters);
+        return {result, controller: filmResponse.controller};
     } catch(e){
         console.error(e);
     }

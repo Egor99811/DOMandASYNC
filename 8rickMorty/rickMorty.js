@@ -12,11 +12,13 @@ let characters = [];
 let paginationIndex = 0;
 
 async function getCharacters(name) {
+    const controller = new AbortController();
     try {
-        const response = await fetch(`${URL}${name}`);
+        const response = await fetch(`${URL}${name}`, {signal: controller.signal});
         if (response.status === 404)
             charactersContainer.innerText = 'Character not found';
-        return await response.json();
+        const result = await response.json();
+        return {result, controller};
     } catch (e) {
         console.error(e);
     }
@@ -24,7 +26,7 @@ async function getCharacters(name) {
 
 async function fillCharacters(name) {
     const response = await getCharacters(name);
-    const charactersList = response.results;
+    const charactersList = response.result.results;
     const paginationCount = Math.ceil(charactersList.length / 10);
     for(let i = 0; i < paginationCount; i++) {
         characters[i] = charactersList.slice(i * 10, i * 10 + 10);

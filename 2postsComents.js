@@ -1,22 +1,26 @@
 const URL = 'https://jsonplaceholder.typicode.com/';
 
 async function getPosts(n) {
+    const controller = new AbortController();
     try{
-        const response = await fetch(`${URL}posts?_limit=${n}`);
+        const response = await fetch(`${URL}posts?_limit=${n}`,{signal: controller.signal});
         if(!response.ok) 
             throw new Error(response.status);
          
-        const posts = await response.json();
-        return posts;
+        const result = await response.json();
+        return {result, controller};
 
     } catch (e) {
         console.error(e);
     }
 }
 
+getPosts(4).then(posts => console.log(posts));
+
 async function getComments() {
+    const controller = new AbortController();
     try{
-        const response = await fetch(`${URL}/comments`);
+        const response = await fetch(`${URL}/comments`, {signal: controller.signal});
         if(!response.ok)
             throw new Error(response.status);
         
@@ -30,17 +34,20 @@ async function getComments() {
                 result[element.postId] = [element];
             }
         });
-        return result;
+        return {result, controller};
     } catch (e) {
         console.error(e);
     }
 }
 
 async function getPostsWithComments(n) {
+    const controller = new AbortController();
     try {
-        const posts = getPosts(n);
-        const comments = await getComments();
-        let result = await posts;
+        const postsFetch = getPosts(n, controller);
+        const commentsResponse = await getComments(controller);
+        const postsResponse = await postsFetch;
+        const comments = commentsResponse.result;
+        let result = postsResponse.result;
         result.forEach(element => {
             if(comments[element.id]){
                 element.comments = comments[element.id];
@@ -48,7 +55,7 @@ async function getPostsWithComments(n) {
                 element.comments = [];
             }
         })
-        return result;
+        return {result, controller};
     } catch (error) {
         console.error(error);
     }

@@ -10,11 +10,13 @@ let jokes = [];
 let index = 0;
 
 async function getJoke() {
+    const controller = new AbortController();
     try {
-        const response = await fetch(URL);
+        const response = await fetch(URL, {signal: controller.signal});
         if (!response.ok)
             throw new Error(response.status);
-        return await response.json();
+        const result = await response.json();
+        return {result, controller};
     } catch (e) {
         console.error(e);
     }
@@ -34,13 +36,13 @@ function updateUI() {
 nextButton.onclick = async function() {
     if(jokes.length === 0) {
         joke = await getJoke();
-        jokes.push(joke);
+        jokes.push(joke.result);
         updateUI();
         return;
     } 
     if(index === jokes.length - 1) {
         joke = await getJoke();
-        jokes.push(joke);
+        jokes.push(joke.result);
         index++;
         updateUI();
         return;

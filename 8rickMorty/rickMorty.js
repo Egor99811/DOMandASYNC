@@ -11,6 +11,18 @@ const URL = 'https://rickandmortyapi.com/api/character/?name=';
 let characters = [];
 let paginationIndex = 0;
 
+function initApp() {
+    const controller = new AbortController();
+    input.addEventListener('input', inputHandler, {signal: controller.signal});
+    searchButton.addEventListener('click', () => fillCharacters(input.value), {signal: controller.signal});
+    backButton.addEventListener('click', backButtonHandler, {signal: controller.signal});
+    nextButton.addEventListener('click', nextButtonHandler, {signal: controller.signal});
+    charactersContainer.addEventListener('click', pickCharacter, {signal: controller.signal});
+    return controller;
+}
+
+const abortApp = initApp();
+
 async function getCharacters(name) {
     const controller = new AbortController();
     try {
@@ -47,33 +59,34 @@ function updateUI() {
     episodeCount.textContent = characters.length;
 }
 
-function getDebouncedCharacters(name) {
+function getDebounce(fn, delay) {
     let timeout;
-    return function () {
+    return function (args) {
         clearTimeout(timeout);
-        timeout = setTimeout(() => fillCharacters(name), 400);
+        timeout = setTimeout(() => fn(...args), delay);
     }
 }
 
-input.oninput = function(event) {
+function inputHandler(event) {
     charactersContainer.innerHTML = 'Loading...';
-    getDebouncedCharacters(event.target.value)();
+    const debouncedCharacters = getDebounce(fillCharacters, 400);
+    debouncedCharacters(event.target.value);
 };
 
-backButton.onclick = function() {
+function backButtonHandler() {
     if( paginationIndex === 0 ) return;
     paginationIndex--;
     updateUI();
 };
 
-nextButton.onclick = function() {
+function nextButtonHandler() {
     if( paginationIndex === characters.length - 1 ) return;
     paginationIndex++;
     updateUI();
 };
 
 
-charactersContainer.onclick = function(event) {
+function pickCharacter(event) {
     console.log(event.target.id);
     const id = event.target.id;
     characters.forEach(subList => {

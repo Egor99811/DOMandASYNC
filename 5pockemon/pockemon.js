@@ -31,7 +31,9 @@ function fillPokemon(pokemon) {
     pokemonContainer.append(pokemonName, image, height, weight, type);
 }
 
-searchButton.onclick = async function() {
+const searchButtonHandler = async function() {
     const pokemon = await getPokemon(input.value);
     fillPokemon(pokemon.result);
 }
+
+searchButton.addEventListener('click', searchButtonHandler);

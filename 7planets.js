@@ -43,7 +43,11 @@ async function getPlanet(filmTitle) {
             }
         });
         const uniquePlanetsURL = [...planetCharacters.keys()];
-        const result = await Promise.all(uniquePlanetsURL.map(url => fetch(url, {signal: controller.signal}).then(response => response.json())));
+        const result = await Promise.all(uniquePlanetsURL.map(url => {
+            return fetch(url, {signal: controller.signal})
+                    .then(response => response.json())
+                    .catch(e => console.error(e));
+        }));
         result.forEach(planet => planet.characters = planetCharacters.get(planet.url));
         return {result, controller};
     } catch (e) {

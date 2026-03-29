@@ -1,0 +1,21 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.charactersContainer{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.charactersContainer__item {
+    width: 200px;
+    height: 200px;
+}
+
+.charactersContainer__item img{
+    width: 150px;
+    height: 150px;
+}
